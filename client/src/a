@@ -1,0 +1,55 @@
+async loadBlockchainData() {
+		const web3 =  window.web3
+		// Load account
+		const accounts = await web3.eth.getAccounts()
+		this.setState({ account: accounts[0] })
+		let balance = await web3.eth.getBalance(accounts[0])
+		await this.setState({balance: web3.utils.fromWei(balance,'Ether')})
+		const networkId = await web3.eth.net.getId()
+		const networkData = Hospital.networks[networkId]
+	
+	if(networkData) {
+		const healty = new web3.eth.Contract(Hospital.abi, networkData.address)
+		this.setState({ healty })
+		const index = await healty.methods.index().call()
+
+		this.setState({ index })
+		//load name account
+		var user = this.state.account
+		
+		const Rs= ["0x81d43Fcc2b3d23e79B39ba071F5eC622f06E5ca7","0x94A72cB3D56fDbD8BfeA1aF5965b8d1b25c4d455"]
+		
+
+		console.log(user,Rs)
+
+		if (user === Rs[0]) {
+			user = "Rumah Sakit Uber";
+		} else if(user === Rs[1]) {
+			user = "Rumah Sakit Bandung";
+		} else{
+			user = "ga terdaftar";
+		}
+
+		this.setState({user})
+		console.log(user)
+		// Load products
+		for (var i = 1; i <= index; i++) {
+			const data = await healty.methods.Datas(i).call()
+			this.setState({
+			Datas: [...this.state.Datas, data]
+			})
+			
+		}
+		
+		var anu = this.state.Datas
+		var count = {}
+		anu = anu[0].nama
+		anu = anu.split(" ")
+		anu.forEach(function(i){count[i] = (count[i] || 0) + 1})
+		console.log(count)
+		console.log(anu)
+		this.setState({ loading: false})
+	} else {
+		window.alert('error')
+	}
+}
